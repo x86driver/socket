@@ -28,8 +28,12 @@ int main()
 		return 2;
 	}
 
-	strcpy(buf, MSG);
-	write(orig_sock, buf, strlen(MSG));
+//	strcpy(buf, MSG);
+//	write(orig_sock, buf, strlen(MSG));
+	printf("Waiting for server...\n");
+	int ret = read(orig_sock, buf, MAX);
+	printf("read ret: %d\n", ret);
+	printf("String: %s\n", buf);
 
 	close(orig_sock);
 	return 0;
