@@ -4,22 +4,23 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include "server.h"
 
 const char *NAME = "./my_sock";
 #define MAX 1024
 
-socklen_t clnt_len;
-int orig_sock, new_sock;
-static struct sockaddr_un clnt_adr, serv_adr;
+Daemon::Daemon(const char *name)
+{
+}
 
-void clean_up(int , const char*);
-
-void start_socket()
+int Daemon::start_server()
 {
 	if ((orig_sock = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
 		perror("generate error");
 	}
 }
+
+void clean_up(int , const char*);
 
 void start_bind()
 {
