@@ -6,30 +6,32 @@
 #include <sys/un.h>
 
 struct NativeReadWrite {
-	void setfd(int fd) {
-		fd_ = fd;
+	void set(int fd) {
+		_fd = fd;
 	}
 	ssize_t read(void *buf, size_t count) {
-		return ::read(fd_, buf, count);
+//		return ::read(fd_, buf, count);
+		printf("fd: %d\n", _fd);
+		return 0;
 	}
 	ssize_t write(const void *buf, size_t count) {
-		return ::write(fd_, buf, count);
+		return ::write(_fd, buf, count);
 	}
 private:
-	int fd_;
+	int _fd;
 };
 
 template <typename TransmissionPolicy>
 class SocketServer : public TransmissionPolicy {
 public:
 	int start_server() {
-		TransmissionPolicy::setfd(10);
+		TransmissionPolicy::set(10);
+		orig_sock = 101;
 		return 0;
 	}
-	void send();
-	void receive();
+	void show() {printf("%d\n", orig_sock);}
 protected:
-	~SocketServer() {printf("WOWO\n"); }
+//	~SocketServer() {printf("WOWO\n"); }
 private:
 	socklen_t clnt_len;
 	int orig_sock, new_sock;
@@ -38,14 +40,16 @@ private:
 
 template
 <
+	template <class nouse>
 	typename ServerPolicy
 >
-class Daemon : public ServerPolicy {
+class Daemon : public ServerPolicy<NativeReadWrite> {
 public:
 	void start() {
 		ServerPolicy::start_server();
 	}
 	~Daemon() {printf("daemon cow\n");}
+private:
 };
 #endif
 
