@@ -4,16 +4,13 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include "server.h"
+#include "daemon.h"
 
 const char *NAME = "./my_sock";
 #define MAX 1024
 
-Daemon::Daemon(const char *name)
-{
-}
-
-int Daemon::start_server()
+#if 0
+void start_socket()
 {
 	if ((orig_sock = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
 		perror("generate error");
@@ -49,8 +46,11 @@ void start_accept()
 	}
 }
 
+#endif
+
 int main(int argc, char **argv)
 {
+/*
 	static char clnt_buf[MAX];
 
 	start_socket();
@@ -64,6 +64,10 @@ int main(int argc, char **argv)
 
 	close(new_sock);
 	clean_up(orig_sock, NAME);
+*/
+	Daemon<SocketServer<NativeReadWrite> > daemon;
+	daemon.start();
+	daemon.read(0, 0);
 	return 0;
 }
 

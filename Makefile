@@ -1,6 +1,7 @@
-TARGET = server client
+TARGET = server client daemon
 
 CC = gcc
+C++ = g++
 CFLAGS = -Wall
 
 all:$(TARGET)
@@ -10,6 +11,9 @@ server:server.c
 
 client:client.c
 	$(CC) $(CFLAGS) -o $@ $<
+
+daemon:daemon.cpp daemon.h
+	$(C++) $(CFLAGS) -o $@ $<
 
 clean:
 	rm -rf $(TARGET)
