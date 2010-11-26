@@ -65,9 +65,10 @@ int main(int argc, char **argv)
 	close(new_sock);
 	clean_up(orig_sock, NAME);
 */
-	Daemon<SocketServer<NativeReadWrite> > daemon;
+	Daemon<SocketServer> daemon;
 	daemon.start();
 	daemon.read(0, 0);
+	daemon.show();
 	return 0;
 }
 
