@@ -2,3 +2,4 @@ client
 server
 win
 daemon
+thread
