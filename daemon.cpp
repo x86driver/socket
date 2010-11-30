@@ -9,18 +9,12 @@
 const char *NAME = "./my_sock";
 #define MAX 1024
 
-#if 0
-void start_socket()
+void SocketServer::start()
 {
 	if ((orig_sock = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
 		perror("generate error");
 	}
-}
 
-void clean_up(int , const char*);
-
-void start_bind()
-{
 	serv_adr.sun_family = AF_UNIX;
 	strcpy(serv_adr.sun_path, NAME);
 	unlink(NAME);
@@ -30,15 +24,9 @@ void start_bind()
 		perror("bind error");
 		clean_up(orig_sock, NAME);
 	}
-}
 
-void start_listen()
-{
 	listen(orig_sock, 1);
-}
 
-void start_accept()
-{
 	clnt_len = sizeof(clnt_adr);
 	if ((new_sock = accept(orig_sock, (struct sockaddr *)&clnt_adr, &clnt_len)) < 0) {
 		perror("accept error");
@@ -46,7 +34,37 @@ void start_accept()
 	}
 }
 
-#endif
+SocketServer::~SocketServer()
+{
+	close(new_sock);
+	clean_up(orig_sock, NAME);
+}
+
+void SocketServer::clean_up(int sd, const char *the_file)
+{
+        close(sd);
+        unlink(the_file);
+}
+
+// =====================
+Daemon<> gps_daemon;
+
+void *library_thread(void *data)
+{
+	const char *txt = "Fuck you!!";
+	char buf[64];
+	gps_daemon.start_server();
+	gps_daemon.send_to_client(txt, strlen(txt));
+	gps_daemon.read_from_client(buf, sizeof(buf));
+	printf("Buffer: %s\n", buf);
+	return NULL;
+}
+
+void *trans_thread(void *data)
+{
+	gps_daemon.start_transport();
+	return NULL;
+}
 
 int main(int argc, char **argv)
 {
@@ -65,16 +83,11 @@ int main(int argc, char **argv)
 	close(new_sock);
 	clean_up(orig_sock, NAME);
 */
-	Daemon<SocketServer> daemon;
-	daemon.start();
-	daemon.read(0, 0);
-	daemon.show();
+	pthread_t tid1, tid2;
+	pthread_create(&tid1, NULL, (void*(*)(void*))library_thread, NULL);
+	pthread_create(&tid2, NULL, trans_thread, NULL);
+	pthread_join(tid1, NULL);
+	pthread_join(tid2, NULL);
 	return 0;
-}
-
-void clean_up(int sd, const char *the_file)
-{
-	close(sd);
-	unlink(the_file);
 }
 
