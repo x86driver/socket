@@ -1,55 +1,62 @@
 #ifndef _SERVER_H
 #define _SERVER_H
 
+#include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
-struct NativeReadWrite {
-	void set(int fd) {
-		_fd = fd;
-	}
+#define dbg printf
+
+class SocketServer {
+public:
+	SocketServer() : orig_sock(0), new_sock(0), fd(0) {}
 	ssize_t read(void *buf, size_t count) {
-//		return ::read(fd_, buf, count);
-		printf("fd: %d\n", _fd);
-		return 0;
+		return ::read(new_sock, buf, count);
 	}
 	ssize_t write(const void *buf, size_t count) {
-		return ::write(_fd, buf, count);
+		return ::write(new_sock, buf, count);
 	}
+protected:
+	~SocketServer();
+	void start();
 private:
-	int _fd;
+	void clean_up(int sd, const char *the_file);
+	int orig_sock, new_sock;
+	int fd;
+	socklen_t clnt_len;
+	struct sockaddr_un clnt_adr, serv_adr;
+	pthread_t tid;
 };
 
-template <typename TransmissionPolicy>
-class SocketServer : public TransmissionPolicy {
+class UartTransport {
 public:
-	int start_server() {
-		TransmissionPolicy::set(10);
-		orig_sock = 101;
-		return 0;
+	void start() {
+		printf("open uart, set bit rate\n");
 	}
-	void show() {printf("%d\n", orig_sock);}
-protected:
-//	~SocketServer() {printf("WOWO\n"); }
-private:
-	socklen_t clnt_len;
-	int orig_sock, new_sock;
-	struct sockaddr_un clnt_adr, serv_adr;
 };
 
 template
 <
-	template <class nouse>
-	typename ServerPolicy
+	typename ServerPolicy = SocketServer,
+	typename TransportPolicy = UartTransport
 >
-class Daemon : public ServerPolicy<NativeReadWrite> {
+class Daemon : public ServerPolicy, public TransportPolicy {
 public:
-	void start() {
-		ServerPolicy::start_server();
+	void start_server() {
+		ServerPolicy::start();
 	}
-	~Daemon() {printf("daemon cow\n");}
+	void start_transport() {
+		TransportPolicy::start();
+	}
+	void read_from_client(void *buf, size_t count) {
+		ServerPolicy::read(buf, count);
+	}
+	void send_to_client(const void *buf, size_t count) {
+		ServerPolicy::write(buf, count);
+	}
 private:
 };
+
 #endif
 

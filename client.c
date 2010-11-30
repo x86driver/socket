@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -28,12 +29,14 @@ int main()
 		return 2;
 	}
 
-//	strcpy(buf, MSG);
-//	write(orig_sock, buf, strlen(MSG));
 	printf("Waiting for server...\n");
 	int ret = read(orig_sock, buf, MAX);
 	printf("read ret: %d\n", ret);
 	printf("String: %s\n", buf);
+
+	strcpy(buf, MSG);
+	buf[strlen(MSG)] = '\0';
+	write(orig_sock, buf, strlen(MSG)+1);
 
 	close(orig_sock);
 	return 0;

@@ -13,7 +13,7 @@ client:client.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 daemon:daemon.cpp daemon.h
-	$(C++) $(CFLAGS) -o $@ $<
+	$(C++) $(CFLAGS) -o $@ $< -lpthread
 
 clean:
 	rm -rf $(TARGET)
