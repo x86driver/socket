@@ -5,31 +5,36 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <arpa/inet.h>
 
 const char *NAME = "./my_sock";
 #define MAX 1024
 
 socklen_t clnt_len;
 int orig_sock, new_sock;
-static struct sockaddr_un clnt_adr, serv_adr;
+static struct sockaddr_in clnt_adr, serv_adr;
+const int PORT = 2002;
 
 void clean_up(int , const char*);
 
 void start_socket()
 {
-	if ((orig_sock = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
+	if ((orig_sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("generate error");
 	}
 }
 
 void start_bind()
 {
-	serv_adr.sun_family = AF_UNIX;
-	strcpy(serv_adr.sun_path, NAME);
-	unlink(NAME);
+	memset(&serv_adr, 0, sizeof(serv_adr));
+	serv_adr.sin_family = AF_INET;
+	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_adr.sin_port = htons(PORT);
+//	strcpy(serv_adr.sun_path, NAME);
+//	unlink(NAME);
 
 	if (bind(orig_sock, (struct sockaddr *)&serv_adr,
-		sizeof(serv_adr.sun_family)+strlen(serv_adr.sun_path)) < 0) {
+		sizeof(serv_adr)) < 0) {
 		perror("bind error");
 		clean_up(orig_sock, NAME);
 	}
@@ -37,7 +42,7 @@ void start_bind()
 
 void start_listen()
 {
-	listen(orig_sock, 1);
+	listen(orig_sock, 5);
 }
 
 void start_accept()
@@ -58,9 +63,11 @@ int main(int argc, char **argv)
 	start_listen();
 	start_accept();
 
-	printf("Input a string: ");
-	scanf("%s", clnt_buf);
-	write(new_sock, clnt_buf, strlen(clnt_buf));
+	do {
+		printf("Input a string: ");
+		scanf("%s", clnt_buf);
+		write(new_sock, clnt_buf, strlen(clnt_buf));
+	} while (clnt_buf[0] != '0');
 
 	close(new_sock);
 	clean_up(orig_sock, NAME);
