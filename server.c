@@ -57,19 +57,37 @@ void start_accept()
 int main(int argc, char **argv)
 {
 	static char clnt_buf[MAX];
+        char recv_buf[MAX];
+
+        clnt_buf[0] = 'A';
+        clnt_buf[1] = '\0';
 
 	start_socket();
 	start_bind();
 	start_listen();
 	start_accept();
 
-	do {
-		printf("Input a string: ");
-		scanf("%s", clnt_buf);
-		write(new_sock, clnt_buf, strlen(clnt_buf));
-	} while (clnt_buf[0] != '0');
+//	do {
+//		printf("Input a string: ");
+//		scanf("%s", clnt_buf);
+//		write(new_sock, clnt_buf, strlen(clnt_buf));
+//	} while (clnt_buf[0] != '0');
+
+        for (;;) {
+                read(new_sock, &recv_buf, 1);
+                while (recv_buf[0] == '1') {
+                        write(new_sock, clnt_buf, 1);
+                        ++clnt_buf[0];
+                        read(new_sock, &recv_buf, 1);
+                }
+                printf("Client ask me to close\n");
+                close(new_sock);
+                printf("Wait for another connection\n");
+                start_accept();
+        }
 
 	close(new_sock);
+
 	clean_up(orig_sock, NAME);
 	return 0;
 }
