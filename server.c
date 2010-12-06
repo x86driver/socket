@@ -13,7 +13,7 @@ const char *NAME = "./my_sock";
 socklen_t clnt_len;
 int orig_sock, new_sock;
 static struct sockaddr_in clnt_adr, serv_adr;
-const int PORT = 2002;
+const int PORT = 2010;
 
 void clean_up(int , const char*);
 

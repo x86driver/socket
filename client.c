@@ -10,7 +10,7 @@
 const char *NAME = "./my_sock";
 #define MSG "Hello world!"
 #define MAX 1024
-const int PORT = 2002;
+const int PORT = 2010;
 
 int orig_sock;
 //int main()
