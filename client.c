@@ -6,6 +6,7 @@
 #include <sys/un.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <stdlib.h>
 
 const char *NAME = "./my_sock";
 #define MSG "Hello world!"
@@ -40,10 +41,15 @@ int socket_init(void)
 	return 0;
 }
 
+#define SIZE 1048576*8
 int main()
 {
-	char buf[MAX];
-        int ret;
+//	char buf[MAX];
+        char *buf;
+        ssize_t ret = 0;
+        FILE *fp = fopen("a.bin", "wb");;
+
+        buf = malloc(SIZE);
 
 	socket_init();
 
@@ -51,35 +57,20 @@ int main()
         printf("Sending a request\n");
         write(orig_sock, &buf[0], 1);
 	printf("Waiting for server...\n");
-        read(orig_sock, &buf[0], 1);
-        printf("%c\n", buf[0]);
-
-        buf[0] = '1';
-        printf("Sending a request\n");
-        write(orig_sock, &buf[0], 1);
-        printf("Waiting for server...\n");
-        read(orig_sock, &buf[0], 1);
-        printf("%c\n", buf[0]);
+        do {
+                ret += read(orig_sock, buf+ret, SIZE - ret);
+        } while (ret != SIZE);
+        printf("read total: %lu bytes\n", ret);
+        fwrite(buf, SIZE, 1, fp);
 
         buf[0] = '0';
         printf("Sending end request, bye~\n");
         write(orig_sock, &buf[0], 1);
 
-#if 0
-	do {
-		ret = read(orig_sock, &buf[0], 1);
-		if (ret != 0)
-			printf("%c", buf[0]);
-			fflush(NULL);
-	} while (ret > 0);
-
-	strcpy(buf, MSG);
-	buf[strlen(MSG)] = '\0';
-	write(orig_sock, buf, strlen(MSG)+1);
-#endif
-
 	printf("\n");
 	close(orig_sock);
+        free(buf);
+        fclose(fp);
 	return 0;
 }
 
