@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
 
 const char *NAME = "./my_sock";
 #define MAX 1024
@@ -54,30 +55,29 @@ void start_accept()
 	}
 }
 
+#define SIZE 1048576*8
 int main(int argc, char **argv)
 {
-	static char clnt_buf[MAX];
+	char *clnt_buf;
         char recv_buf[MAX];
+        ssize_t ret;
 
-        clnt_buf[0] = 'A';
-        clnt_buf[1] = '\0';
+        clnt_buf = malloc(SIZE);
+        memset(clnt_buf, 'A', SIZE);
 
 	start_socket();
 	start_bind();
 	start_listen();
 	start_accept();
 
-//	do {
-//		printf("Input a string: ");
-//		scanf("%s", clnt_buf);
-//		write(new_sock, clnt_buf, strlen(clnt_buf));
-//	} while (clnt_buf[0] != '0');
-
         for (;;) {
                 read(new_sock, &recv_buf, 1);
                 while (recv_buf[0] == '1') {
-                        write(new_sock, clnt_buf, 1);
-                        ++clnt_buf[0];
+                        ret = 0;
+                        do {
+                                ret += write(new_sock, clnt_buf, SIZE - ret);
+                                printf("write %lu bytes\n", ret);
+                        } while (ret != SIZE);
                         read(new_sock, &recv_buf, 1);
                 }
                 printf("Client ask me to close\n");
@@ -87,8 +87,8 @@ int main(int argc, char **argv)
         }
 
 	close(new_sock);
-
-	clean_up(orig_sock, NAME);
+        free(clnt_buf);
+        clean_up(orig_sock, NAME);
 	return 0;
 }
 
