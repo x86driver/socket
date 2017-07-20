@@ -1,3 +1,7 @@
-目標是拿去給 gps 使用
+可用來做 client/server 範例
 
-但可用來做 client/server 範例
+Usage:
+
+1. make
+2. ./server
+3. 開另一個新的終端機, ./client
