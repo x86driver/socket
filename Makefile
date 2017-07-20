@@ -1,4 +1,4 @@
-TARGET = server client daemon
+TARGET = server client
 
 CC = gcc
 C++ = g++
@@ -11,9 +11,6 @@ server:server.c
 
 client:client.c
 	$(CC) $(CFLAGS) -o $@ $<
-
-daemon:daemon.cpp daemon.h
-	$(C++) $(CFLAGS) -o $@ $< -lpthread
 
 clean:
 	rm -rf $(TARGET)
