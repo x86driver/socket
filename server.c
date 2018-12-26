@@ -31,8 +31,6 @@ void start_bind()
 	serv_adr.sin_family = AF_INET;
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_adr.sin_port = htons(PORT);
-//	strcpy(serv_adr.sun_path, NAME);
-//	unlink(NAME);
 
 	if (bind(orig_sock, (struct sockaddr *)&serv_adr,
 		sizeof(serv_adr)) < 0) {
